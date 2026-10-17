@@ -18,6 +18,9 @@ to be implemented; there are no measured results yet.
 
 ## Reproducibility
 
+Try the [interactive preprocessing examples](interactive.md) to explore rolling
+windows and text normalization with reactive controls.
+
 Use the environment locked in `uv.lock`, a random seed of 42, and the commands in
 the repository README. Keep raw data outside version control. Data acquisition
 examples are initially commented out so the starter book builds without downloads.

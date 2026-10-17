@@ -13,6 +13,8 @@ wheels/
 .ipynb_checkpoints/
 book/_build/
 .jupyter_cache/
+.jupyter-book-marimo/
+__marimo__/
 .ruff_cache/
 
 # Downloaded data, models, and experiment output

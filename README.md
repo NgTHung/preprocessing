@@ -53,6 +53,8 @@ book/
   03_text_eda.ipynb
   04_text_preprocessing.ipynb
   report.md
+  interactive.md        # reactive marimo teaching examples
+  plugins/marimo.mjs
   myst.yml
 .github/workflows/pages.yml  # execute, build, and deploy to GitHub Pages
 src/preprocessing/       # shared project paths and seed
@@ -138,6 +140,51 @@ uv run python -m http.server 8000 --directory book/_build/html
 ```
 
 Open <http://localhost:8000>.
+
+## Reactive marimo cells
+
+[Interactive preprocessing](book/interactive.md) contains a rolling-window slider
+and editable text-normalization example. These use synthetic data and sample text;
+they complement the four `.ipynb` analysis chapters.
+
+`jupyter-book-marimo` is installed by the normal `uv sync --locked` command. The
+plugin registered in `book/myst.yml` uses a small JavaScript adapter so the
+same configuration works on Windows and the Linux Pages runner. Build and preview
+commands are unchanged. The plugin executes marimo cells during the build and
+publishes initial results; Pyodide enables reactivity in the reader's browser after
+the runtime loads. The first visit requires internet access for runtime assets.
+The example's input cells use `:server-output: false` so editable controls appear
+after Python starts, avoiding edits being reset during initial hydration.
+
+To add reactive cells to a MyST page, use:
+
+````markdown
+```{marimo-config}
+:external-env: true
+:error: false
+```
+
+```{marimo} python
+import marimo as mo
+size = mo.ui.slider(start=1, stop=30, value=7, label="Window")
+size
+```
+
+```{marimo} python
+mo.md(f"Selected window: {size.value}")
+```
+````
+
+Cells on the same page share one reactive dependency graph. Define each shared
+variable in one cell; read a control's `.value` in a separate dependent cell.
+`:external-env: true` uses the uv build environment, and `:error: false` makes
+marimo execution errors fail the build. Browser execution has its own environment:
+keep examples small, check Pyodide package compatibility, and keep full-dataset
+training in the analysis notebooks. Generated `.jupyter-book-marimo` assets and
+marimo caches are ignored by Git and rebuilt in CI.
+
+See the [marimo Jupyter Book integration](https://docs.marimo.io/guides/exporting/jupyter_book/)
+for directive options and further examples.
 
 ## GitHub Pages
 

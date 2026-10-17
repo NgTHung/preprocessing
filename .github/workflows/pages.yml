@@ -37,6 +37,8 @@ jobs:
         run: uv sync --locked
       - name: Lint shared Python code
         run: uv run --locked ruff check src
+      - name: Check marimo plugin loading
+        run: node --input-type=module -e "await import('./book/plugins/marimo.mjs')"
       - name: Execute notebooks and build HTML
         run: uv run --locked --directory book jupyter book build --html --execute --strict --execute-parallel 1 --ci
       - name: Upload Pages artifact
