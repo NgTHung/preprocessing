@@ -1,0 +1,27 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Jupyter and generated book
+.ipynb_checkpoints/
+book/_build/
+.jupyter_cache/
+.ruff_cache/
+
+# Downloaded data, models, and experiment output
+data/**
+!data/raw/
+!data/raw/.gitkeep
+!data/processed/
+!data/processed/.gitkeep
+outputs/**
+!outputs/.gitkeep
+.cache/
+.env

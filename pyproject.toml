@@ -1,0 +1,47 @@
+[project]
+name = "preprocessing"
+version = "0.1.0"
+description = "Time-series and text preprocessing notebooks for a data mining Jupyter Book"
+readme = "README.md"
+authors = [
+    { name = "NgTHung", email = "tuanhungag1@gmail.com" }
+]
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "arch>=8.0.0",
+    "beautifulsoup4>=4.15.0",
+    "datasets>=5.1.0",
+    "gensim>=4.4.0",
+    "holidays>=0.106",
+    "kagglehub>=1.0.2",
+    "matplotlib>=3.11.2",
+    "nltk>=3.10.3",
+    "numpy>=2.5.4",
+    "pandas>=3.0.6",
+    "pyarrow>=26.0.0",
+    "scikit-learn>=1.9.1",
+    "scipy>=1.18.1",
+    "seaborn>=0.13.2",
+    "statsmodels>=0.15.0",
+    "tokenizers>=0.23.3",
+    "wordcloud>=1.9.6",
+]
+
+[project.optional-dependencies]
+embeddings = [
+    "sentence-transformers>=6.1.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.7,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ipykernel>=7.4.0",
+    "jupyter-book>=2,<3",
+    "jupyter-server>=2.21.1",
+    "jupyterlab>=4.6.4",
+    "nbformat>=5.11.1",
+    "ruff>=0.17.1",
+]

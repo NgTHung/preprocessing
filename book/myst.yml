@@ -1,0 +1,22 @@
+version: 1
+project:
+  id: 26fd59de-8b50-4d2d-8d85-061401d30524
+  title: "Data Preprocessing: Time Series and Text"
+  description: "Time-series and text EDA, preprocessing, and impact assessment."
+  authors:
+    - name: "TODO: Student name and student ID"
+  toc:
+    - file: index.md
+    - title: "Part (a): Time series"
+      children:
+        - file: 01_time_series_eda.ipynb
+        - file: 02_time_series_preprocessing.ipynb
+    - title: "Part (b): Text"
+      children:
+        - file: 03_text_eda.ipynb
+        - file: 04_text_preprocessing.ipynb
+    - title: Discussion
+      children:
+        - file: report.md
+site:
+  template: book-theme
