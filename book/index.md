@@ -1,31 +1,41 @@
-# Data Preprocessing: Time Series and Text
+# Data preprocessing: Time series and text
 
-**Student:** TODO: name and student ID.
+Preprocessing changes both the information available to a model and the conclusions
+an analyst can draw. This book provides experiment scaffolds for examining those
+changes in time-series forecasting and text classification. Its chapters organize
+the questions, comparisons, and evidence required by the course assignment.
 
-This book is a starter for the data preprocessing assignment. Part (a) uses time
-series and part (b) uses text. The notebooks contain environment setup, data
-acquisition examples, and analysis prompts. Experiments and conclusions are still
-to be implemented; there are no measured results yet.
+Student name and student ID: TODO.
 
-## Data selection
+The dataset analyses are incomplete. Acquisition examples are commented out,
+analysis cells are prompts, and no dataset experiment results are included.
 
-- **Time series:** proposed [PJM hourly energy consumption](https://www.kaggle.com/datasets/robikscube/hourly-energy-consumption).
-  Start with `PJME_hourly.csv`; verify its time span covers at least two years.
-  Document the timestamp convention, duplicates, and gaps before regularizing it.
-- **Text:** proposed [IMDb movie reviews](https://huggingface.co/datasets/stanfordnlp/imdb).
-  Use the labeled training and test splits, with at least 10,000 labeled reviews
-  and both sentiment labels. Exclude the unlabeled split from supervised metrics.
+## Questions and chapters
 
-## Reproducibility
+| Question | Chapters |
+|---|---|
+| What structure and data-quality problems affect the series? | [Time-series EDA](01_time_series_eda.ipynb) |
+| How do gap filling, transformations, and features affect forecasting? | [Time-series preprocessing](02_time_series_preprocessing.ipynb) |
+| How do document lengths and vocabulary differ across labels? | [Text EDA](03_text_eda.ipynb) |
+| What information do normalization, tokenization, and representations retain? | [Text preprocessing](04_text_preprocessing.ipynb) |
+| Which choices are supported by the experiments? | [Results and discussion](report.md) |
 
-Try the [interactive preprocessing examples](interactive.md) to explore rolling
-windows and text normalization with reactive controls.
+Part (a) uses hourly Beijing Multi-Site Air Quality readings, and part (b) uses AG
+News topic-labeled articles.
+The repository README lists their public sources and setup instructions. The EDA
+chapters contain acquisition examples and prompts for recording provenance,
+checking constraints, and defining evaluation splits.
 
-Use the environment locked in `uv.lock`, a random seed of 42, and the commands in
-the repository README. Keep raw data outside version control. Data acquisition
-examples are initially commented out so the starter book builds without downloads.
-Once you choose the datasets, enable those cells and implement the analyses before
-submission.
+## Explore a single preprocessing choice
 
-For each experiment, record the theory and formula, implementation, numeric
-results in Python variables, and an interpretation of the observed results.
+The [interactive examples](interactive.md) show how a rolling window changes a
+synthetic series and how normalization changes sample text. Their controls help
+explain individual operations; they do not replace experiments on the chosen data.
+
+## Read the evidence
+
+Each completed technique needs theory and formulas, executable code, displayed
+measurements, and an interpretation. Forecasting comparisons use chronological
+splits and information available at prediction time. Text comparisons fit learned
+preprocessing on training data, including within validation folds. The discussion
+chapter provides prompts for comparing results and identifying limitations.

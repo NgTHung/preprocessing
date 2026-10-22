@@ -1,10 +1,10 @@
 # Interactive preprocessing
 
-Change a control below to rerun the Python cells that depend on it. These small
-teaching examples use synthetic values and sample text; the four analysis
-notebooks contain the required assignment work.
+Rolling windows and text normalization change which details remain visible in
+data. These examples let you explore each effect with synthetic values and sample
+text. Change a control to rerun the Python cells that depend on it.
 
-The page shows initial results immediately. Controls appear after the
+The page shows initial output before the controls load. Controls appear after the
 browser finishes loading Python. The first visit needs internet access to download
 the browser runtime. Text entered here is processed in your browser.
 
@@ -21,9 +21,10 @@ import marimo as mo
 
 ## Part (a): Rolling mean
 
-The line below is a deterministic, synthetic daily series with a trend and weekly
-seasonality. Increasing the trailing window smooths short-term fluctuations but
-also delays the response to changes. Only full windows are shown.
+The chart uses 120 synthetic daily observations with a trend and periodic
+components of 7 and 30 days. Increasing the trailing window smooths short-term
+fluctuations but also delays the response to changes. Only full windows are shown;
+values have arbitrary units.
 
 ```{marimo} python
 :server-output: false
@@ -37,6 +38,8 @@ window
 
 For observations $x_t$, the trailing mean is
 $\bar{x}_t = w^{-1}\sum_{i=0}^{w-1}x_{t-i}$.
+Here $t$ indexes the day, $w$ is the selected window in days, $i$ indexes the lag,
+and $\bar{x}_t$ is the mean of the $w$ observations ending at $t$.
 This display includes the current observation. When creating a forecasting feature,
 shift it to match the forecast origin and use only observations available then.
 
@@ -85,12 +88,15 @@ rolling_mean = [
 ]
 mo.vstack([
     mo.md(
-        f"**Window: {window.value} days.** "
-        f"Latest rolling mean: **{rolling_mean[-1]:.3f}**."
+        f"Window: {window.value} days. "
+        f"Latest rolling mean: {rolling_mean[-1]:.3f} (arbitrary units)."
     ),
     series_svg(daily_values, rolling_mean),
 ])
 ```
+
+Figure 1. Gray shows the synthetic observations; blue shows the trailing mean.
+Compare their peaks as you change the window to examine smoothing and delay.
 
 ## Part (b): Text normalization
 
@@ -123,13 +129,18 @@ if remove_punctuation.value:
 normalized_text = " ".join(normalized_text.split())
 tokens = normalized_text.split()
 mo.vstack([
-    mo.md("**Normalized text**"),
+    mo.md("Normalized text:"),
     mo.as_html(normalized_text),
     mo.md(
-        f"**Token count: {len(tokens)}.** "
-        f"Unique tokens: **{len(set(tokens))}**. "
-        f"Characters: **{len(normalized_text)}**."
+        f"Token count: {len(tokens)}. "
+        f"Unique tokens: {len(set(tokens))}. "
+        f"Characters: {len(normalized_text)}."
     ),
     mo.as_html(tokens),
 ])
 ```
+
+The counts describe whitespace-delimited tokens and characters in the displayed
+normalized text. Compare the output with the original review to identify which
+boundaries or distinctions each step removes. Dataset comparisons belong in the
+[text preprocessing notebook](04_text_preprocessing.ipynb).
