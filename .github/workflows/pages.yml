@@ -36,7 +36,9 @@ jobs:
       - name: Install locked dependencies
         run: uv sync --locked
       - name: Lint shared Python code
-        run: uv run --locked ruff check src
+        run: uv run --locked ruff check src tests
+      - name: Test shared Python code
+        run: uv run --locked pytest
       - name: Check marimo plugin loading
         run: node --input-type=module -e "await import('./book/plugins/marimo.mjs')"
       - name: Execute notebooks and build HTML

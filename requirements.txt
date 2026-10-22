@@ -60,6 +60,7 @@ cloudpickle==3.1.2
 colorama==0.4.6 ; sys_platform == 'win32'
     # via
     #   ipython
+    #   pytest
     #   tqdm
 comm==0.2.3
     # via ipykernel
@@ -130,6 +131,8 @@ idna==3.20
     #   jsonschema
     #   requests
     #   yarl
+iniconfig==2.3.1
+    # via pytest
 interface-meta==2.0.1
     # via formulaic
 ipykernel==7.4.0
@@ -299,6 +302,7 @@ packaging==26.3
     #   matplotlib
     #   nbconvert
     #   patsy
+    #   pytest
     #   statsmodels
 pandas==3.0.6
     # via
@@ -324,6 +328,8 @@ platformdirs==4.13.3
     # via
     #   jupyter-book
     #   jupyter-core
+pluggy==1.7.0
+    # via pytest
 prometheus-client==0.26.0
     # via jupyter-server
 prompt-toolkit==3.0.53
@@ -356,10 +362,12 @@ pygments==2.21.0
     #   ipython-pygments-lexers
     #   marimo
     #   nbconvert
+    #   pytest
 pymdown-extensions==11.0.2
     # via marimo
 pyparsing==3.3.3
     # via matplotlib
+pytest==9.1.1
 python-dateutil==2.9.0.post0
     # via
     #   arrow

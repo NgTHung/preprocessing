@@ -40,7 +40,8 @@ Run from the repository root. `.python-version` selects Python 3.12; `pyproject.
 ```powershell
 $env:PYTHONUTF8 = "1"
 uv sync --locked
-uv run --locked ruff check src
+uv run --locked ruff check src tests
+uv run --locked pytest
 node --input-type=module -e "await import('./book/plugins/marimo.mjs')"
 uv run --locked --directory book jupyter book build --html --execute --strict --execute-parallel 1 --ci
 ```
