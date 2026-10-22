@@ -9,7 +9,9 @@ analysis notebooks contain no dataset experiment results to interpret.
 
 Use the [time-series audit](01_time_series_eda.ipynb) to justify the dataset,
 sampling frequency, timestamp convention, and seasonal periods. Identify which
-patterns are observed and which explanations remain assumptions.
+patterns are observed and which explanations remain assumptions. Explain the
+station-selection rule, whether an alternative rule chooses the same station, and
+the limits of applying one station's results to the other 11.
 
 Use the [preprocessing experiments](02_time_series_preprocessing.ipynb) to address:
 
@@ -21,12 +23,15 @@ Use the [preprocessing experiments](02_time_series_preprocessing.ipynb) to addre
   explain the chosen seasonal period.
 - Anomalies: discuss detection rates and overlap, separating flagged observations
   from verified explanations for them.
-- Forecasting: compare Random Forest with persistence on the untouched chronological
-  test set. Explain feature availability, target alignment, and the use of test history.
+- Forecasting: compare Random Forest with persistence for PM2.5 and PM10 on the
+  untouched chronological test set. Explain feature availability, target alignment,
+  covariate choice, and the use of test history, and discuss where the targets differ.
 
 The advanced Granger section is also named in the rubric. If evaluated, discuss lag
-orders, stationarity, multiple comparisons, and the distinction between predictive
-relationships and real-world causation. If omitted, state the coverage limitation.
+orders, stationarity, multiple comparisons, effect sizes at large sample sizes,
+pairwise versus conditional tests, shared weather drivers, and the distinction
+between predictive relationships and real-world causation. If omitted, state the
+coverage limitation.
 
 ## Text
 

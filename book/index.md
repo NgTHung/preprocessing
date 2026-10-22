@@ -20,8 +20,8 @@ analysis cells are prompts, and no dataset experiment results are included.
 | What information do normalization, tokenization, and representations retain? | [Text preprocessing](04_text_preprocessing.ipynb) |
 | Which choices are supported by the experiments? | [Results and discussion](report.md) |
 
-Part (a) uses hourly Beijing Multi-Site Air Quality readings, and part (b) uses AG
-News topic-labeled articles.
+Part (a) uses hourly Beijing Multi-Site Air Quality readings from one station, with
+PM2.5 and PM10 as forecast targets, and part (b) uses AG News topic-labeled articles.
 The repository README lists their public sources and setup instructions. The EDA
 chapters contain acquisition examples and prompts for recording provenance,
 checking constraints, and defining evaluation splits.
