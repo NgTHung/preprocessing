@@ -78,7 +78,7 @@ processed data, model weights, and caches out of Git. Store experiment exports i
 | [Text preprocessing](book/04_text_preprocessing.ipynb) | Normalization, tokenization, ablations, representations, embedding extension |
 | [Discussion](book/report.md) | Evidence-based comparisons and limitations |
 | [Interactive examples](book/interactive.md) | Synthetic rolling-window and sample-text demonstrations |
-| [Shared Python package](src/preprocessing/__init__.py) | Project paths and `RANDOM_STATE` |
+| [Shared Python package](src/preprocessing/) | Project paths and `RANDOM_STATE`; dataset download, audit, and split helpers, tested in `tests/` |
 
 Follow [AGENTS.md](AGENTS.md) for development and evaluation rules and the
 [writing guide](docs/WRITING_GUIDE.md) for documentation. The assignment marks
@@ -128,8 +128,8 @@ See [Book authoring](docs/book-authoring.md) for navigation and reactive-cell ru
 
 ## Publish on GitHub Pages
 
-[pages.yml](.github/workflows/pages.yml) installs the locked environment, lints
-shared Python code, checks the marimo plugin, executes notebooks, and builds strict
+[pages.yml](.github/workflows/pages.yml) installs the locked environment, lints and
+tests shared Python code, checks the marimo plugin, executes notebooks, and builds strict
 HTML. Pull requests validate the build. Pushes to `main` and manual workflow runs
 deploy after a successful build. CI uses a fresh checkout without execution caches.
 
@@ -151,7 +151,8 @@ gh workflow run pages.yml
 ## Maintain the environment
 
 ```powershell
-uv run --locked ruff check src
+uv run --locked ruff check src tests
+uv run --locked pytest
 node --input-type=module -e "await import('./book/plugins/marimo.mjs')"
 uv export --locked --no-hashes --no-emit-project --output-file requirements.txt
 ```
