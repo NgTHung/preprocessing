@@ -9,6 +9,7 @@ import pytest
 from preprocessing.air_quality import (
     STATION_ARCHIVE,
     add_timestamp,
+    audit_columns,
     audit_stations,
     chronological_split,
     download_air_quality,
@@ -134,6 +135,56 @@ def test_audit_flags_unsorted_station_file():
 
     assert bool(audit["sorted"]) is False
     assert audit["longest_target_gap_hours"] == 0
+
+
+def station_frame(station, values, **other_columns):
+    """Hourly records starting 2013-03-01 00:00 with a PM2.5 column."""
+    timestamps = pd.date_range("2013-03-01", periods=len(values), freq="h")
+    return pd.DataFrame(
+        {"timestamp": timestamps, "station": station, "PM2.5": values, **other_columns}
+    )
+
+
+def test_audit_reports_share_of_missing_hours_in_long_gaps():
+    # Gaps of 1 and 3 hours; with a 2-hour threshold only the 3-hour gap is long.
+    values = [1.0, np.nan, 2.0, np.nan, np.nan, np.nan, 3.0]
+
+    audit = audit_stations(station_frame("A", values), long_gap_hours=2).loc["A"]
+
+    assert audit["long_gap_missing_share"] == pytest.approx(3 / 4)
+
+
+def test_audit_treats_gap_equal_to_threshold_as_short():
+    values = [1.0, np.nan, np.nan, 2.0]
+
+    audit = audit_stations(station_frame("A", values), long_gap_hours=2).loc["A"]
+
+    assert audit["long_gap_missing_share"] == 0.0
+
+
+def test_audit_reports_zero_long_gap_share_without_missing_values():
+    audit = audit_stations(station_frame("A", [1.0, 2.0])).loc["A"]
+
+    assert audit["long_gap_missing_share"] == 0.0
+
+
+def test_audit_columns_stacks_one_audit_per_variable():
+    frame = pd.concat(
+        [
+            station_frame("A", [1.0, np.nan, 2.0], PM10=[1.0, 2.0, 3.0]),
+            station_frame("B", [1.0, 2.0, 3.0], PM10=[np.nan, np.nan, 3.0]),
+        ],
+        ignore_index=True,
+    )
+
+    audit = audit_columns(frame, ["PM2.5", "PM10"])
+
+    assert audit.index.names == ["variable", "station"]
+    assert audit.loc[("PM2.5", "A"), "target_missing"] == 1
+    assert audit.loc[("PM10", "B"), "longest_target_gap_hours"] == 2
+    pd.testing.assert_frame_equal(
+        audit.loc["PM10"], audit_stations(frame, target="PM10")
+    )
 
 
 def hourly(start, periods):
