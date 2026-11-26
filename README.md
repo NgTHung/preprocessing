@@ -5,11 +5,12 @@ text preprocessing methods in the HCMUS Data Mining course. The notebooks organi
 data acquisition, statistical analysis, and evaluation so readers can examine the
 evidence behind each preprocessing choice.
 
-The time-series EDA chapter contains executed timestamp and missingness audits,
-training-only summaries, gap-aware ACF/PACF, interpolation sensitivity, and rolling
-statistics. Preprocessing experiments, forecasting, and text analyses remain
+The time-series chapters contain executed analyses: timestamp and missingness
+audits, gap-aware ACF/PACF, gap-filling comparisons, stationarity tests,
+decompositions, calendar and rolling features, anomaly detectors, Granger tests, and
+a one-step Random Forest forecast against persistence. Text analyses remain
 unfinished. Building the book downloads the Beijing archive on first use; no model
-weights are required for the implemented EDA.
+weights are required for the time-series chapters.
 
 Student name: TODO. Student ID (MSSV): TODO.
 

@@ -7,9 +7,10 @@ the questions, comparisons, and evidence required by the course assignment.
 
 Student name and student ID: TODO.
 
-The time-series EDA contains executed audits, training-only plots and correlations,
-gap-aware ACF/PACF with interpolation sensitivity, and rolling summaries. The
-preprocessing experiments, forecasting, and text analyses remain unfinished.
+Both time-series chapters are executed: the EDA audits the data and describes its
+temporal structure, and the preprocessing chapter compares gap filling,
+transformations, decompositions, anomaly detectors, Granger tests, and a Random
+Forest forecast. The text analyses remain unfinished.
 
 ## Questions and chapters
 
