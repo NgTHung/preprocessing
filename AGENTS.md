@@ -18,9 +18,8 @@ Choose correctness and reproducibility over shorter runtimes or more favorable s
 - `book/01_time_series_eda.ipynb` and `book/02_time_series_preprocessing.ipynb` contain part (a).
 - `book/03_text_eda.ipynb` and `book/04_text_preprocessing.ipynb` contain part (b).
 - `book/report.md` compares results and discusses limitations. It links to notebook evidence rather than inventing or manually reproducing scores.
-- `book/interactive.md` contains small reactive teaching examples. Synthetic demonstrations do not replace dataset experiments.
 - `src/preprocessing/` contains shared Python helpers. Its `__init__.py` owns project paths and `RANDOM_STATE`.
-- `book/myst.yml` owns book metadata, navigation, and plugin registration; `.github/workflows/pages.yml` owns CI and deployment.
+- `book/myst.yml` owns book metadata and navigation; `.github/workflows/pages.yml` owns CI and deployment.
 
 The selected datasets are Beijing Multi-Site Air Quality (UCI dataset 501) for part (a) and AG News (Hugging Face `fancyzhx/ag_news`, pinned revision) for part (b). The README records their sources, revisions, citations, and licenses. Time series must cover at least two years at daily or hourly frequency; text must contain at least 10,000 labeled samples and at least two labels. Recheck these constraints after any filtering or subsampling.
 
@@ -42,7 +41,6 @@ $env:PYTHONUTF8 = "1"
 uv sync --locked
 uv run --locked ruff check src tests
 uv run --locked pytest
-node --input-type=module -e "await import('./book/plugins/marimo.mjs')"
 uv run --locked --directory book jupyter book build --html --execute --strict --execute-parallel 1 --ci
 ```
 
@@ -91,18 +89,9 @@ Run checks appropriate to the change:
 
 - Python helpers: Ruff and focused behavior checks, followed by affected notebooks with fresh execution when imported logic changes.
 - Notebook or book content: strict executed HTML build; inspect equations, figures, tables, references, and outputs in the rendered pages.
-- Plugin or reactive cells: plugin import check, strict build, and browser interaction checks for each changed control after the runtime loads.
 - Submission: fresh environment and full book execution with the actual datasets, followed by a check of the published pages. Record any unmet requirement explicitly.
 
 Do not equate lint success, a cached build, or executable TODO cells with completed analysis. Report what was checked and any limits of the evidence.
-
-## MyST and reactive examples
-
-Keep `book/plugins/marimo.mjs` registered in `book/myst.yml`. Its Node adapter invokes the uv environment's platform-specific executable on Windows and Linux. Registering the Python launcher directly causes `spawn EFTYPE` in the Windows workflow.
-
-Follow [Book authoring](docs/book-authoring.md) for reactive-cell structure, directive options, and browser verification. Preserve the documented safeguards against execution errors and startup hydration resetting edits.
-
-Browser execution uses Pyodide and needs internet access for runtime assets. Check package compatibility and actual recomputation in a browser; a successful static build alone does not validate interactivity. Keep full-dataset training in the analysis notebooks.
 
 ## Documentation and delivery
 
@@ -110,6 +99,6 @@ Read [docs/WRITING_GUIDE.md](docs/WRITING_GUIDE.md) before editing Markdown or n
 
 Keep task status in the tracker explicitly used for the work, and history in commits or dated records. Do not assume a particular external tracker or issue-based branch convention. Use focused Conventional Commit messages when committing; do not push or deploy merely to validate a local documentation edit.
 
-Keep raw/processed datasets, model weights, caches, credentials, `.venv`, `outputs/`, and generated book/marimo assets out of Git. The submission is one public Jupyter Book on GitHub Pages from the student's personal repository. Before submission, verify student name/MSSV, dataset and resource links, setup instructions, and the published URL.
+Keep raw/processed datasets, model weights, caches, credentials, `.venv`, `outputs/`, and generated book assets out of Git. The submission is one public Jupyter Book on GitHub Pages from the student's personal repository. Before submission, verify student name/MSSV, dataset and resource links, setup instructions, and the published URL.
 
 Pushes to `main` and manual Pages workflow runs deploy after a successful build; pull requests validate without deploying. Preserve the workflow's project-site `BASE_URL` handling when changing navigation or hosting configuration.

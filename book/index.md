@@ -1,14 +1,15 @@
 # Data preprocessing: Time series and text
 
 Preprocessing changes both the information available to a model and the conclusions
-an analyst can draw. This book provides experiment scaffolds for examining those
+an analyst can draw. This book examines those
 changes in time-series forecasting and text classification. Its chapters organize
 the questions, comparisons, and evidence required by the course assignment.
 
 Student name and student ID: TODO.
 
-The dataset analyses are incomplete. Acquisition examples are commented out,
-analysis cells are prompts, and no dataset experiment results are included.
+The time-series EDA contains executed audits, training-only plots and correlations,
+gap-aware ACF/PACF with interpolation sensitivity, and rolling summaries. The
+preprocessing experiments, forecasting, and text analyses remain unfinished.
 
 ## Questions and chapters
 
@@ -20,17 +21,11 @@ analysis cells are prompts, and no dataset experiment results are included.
 | What information do normalization, tokenization, and representations retain? | [Text preprocessing](04_text_preprocessing.ipynb) |
 | Which choices are supported by the experiments? | [Results and discussion](report.md) |
 
-Part (a) uses hourly Beijing Multi-Site Air Quality readings, and part (b) uses AG
-News topic-labeled articles.
+Part (a) uses hourly Beijing Multi-Site Air Quality readings from one station, with
+PM2.5 and PM10 as forecast targets, and part (b) uses AG News topic-labeled articles.
 The repository README lists their public sources and setup instructions. The EDA
-chapters contain acquisition examples and prompts for recording provenance,
-checking constraints, and defining evaluation splits.
-
-## Explore a single preprocessing choice
-
-The [interactive examples](interactive.md) show how a rolling window changes a
-synthetic series and how normalization changes sample text. Their controls help
-explain individual operations; they do not replace experiments on the chosen data.
+chapters own provenance, constraint checks, and evaluation splits. Time-series
+EDA uses the verified UCI archive; text acquisition remains a commented example.
 
 ## Read the evidence
 

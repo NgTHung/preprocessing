@@ -9,10 +9,12 @@ import pytest
 from preprocessing.air_quality import (
     STATION_ARCHIVE,
     add_timestamp,
+    audit_columns,
     audit_stations,
     chronological_split,
     download_air_quality,
     read_stations,
+    wind_components,
 )
 
 COLUMNS = ["No", "year", "month", "day", "hour", "PM2.5", "station"]
@@ -136,6 +138,58 @@ def test_audit_flags_unsorted_station_file():
     assert audit["longest_target_gap_hours"] == 0
 
 
+def station_frame(station, values, **other_columns):
+    """Hourly records starting 2013-03-01 00:00 with a PM2.5 column."""
+    timestamps = pd.date_range("2013-03-01", periods=len(values), freq="h")
+    return pd.DataFrame(
+        {"timestamp": timestamps, "station": station, "PM2.5": values, **other_columns}
+    )
+
+
+def test_audit_reports_share_of_missing_hours_in_long_gaps():
+    # Gaps of 1 and 3 hours; with a 2-hour threshold only the 3-hour gap is long.
+    values = [1.0, np.nan, 2.0, np.nan, np.nan, np.nan, 3.0]
+
+    audit = audit_stations(station_frame("A", values), long_gap_hours=2).loc["A"]
+
+    assert audit["long_gap_missing_share"] == pytest.approx(3 / 4)
+    assert audit["long_gap_missing_hours"] == 3
+
+
+def test_audit_treats_gap_equal_to_threshold_as_short():
+    values = [1.0, np.nan, np.nan, 2.0]
+
+    audit = audit_stations(station_frame("A", values), long_gap_hours=2).loc["A"]
+
+    assert audit["long_gap_missing_share"] == 0.0
+    assert audit["long_gap_missing_hours"] == 0
+
+
+def test_audit_reports_zero_long_gap_share_without_missing_values():
+    audit = audit_stations(station_frame("A", [1.0, 2.0])).loc["A"]
+
+    assert audit["long_gap_missing_share"] == 0.0
+
+
+def test_audit_columns_stacks_one_audit_per_variable():
+    frame = pd.concat(
+        [
+            station_frame("A", [1.0, np.nan, 2.0], PM10=[1.0, 2.0, 3.0]),
+            station_frame("B", [1.0, 2.0, 3.0], PM10=[np.nan, np.nan, 3.0]),
+        ],
+        ignore_index=True,
+    )
+
+    audit = audit_columns(frame, ["PM2.5", "PM10"])
+
+    assert audit.index.names == ["variable", "station"]
+    assert audit.loc[("PM2.5", "A"), "target_missing"] == 1
+    assert audit.loc[("PM10", "B"), "longest_target_gap_hours"] == 2
+    pd.testing.assert_frame_equal(
+        audit.loc["PM10"], audit_stations(frame, target="PM10")
+    )
+
+
 def hourly(start, periods):
     index = pd.date_range(start, periods=periods, freq="h")
     return pd.Series(np.arange(periods, dtype=float), index=index)
@@ -189,3 +243,38 @@ def test_split_rejects_empty_test_interval():
         chronological_split(
             series, validation_start="2016-01-01 02:00", test_start="2017-01-01"
         )
+
+
+def test_wind_components_follow_meteorological_convention():
+    direction = pd.Series(["N", "E", "SW", None, "S"])
+    speed = pd.Series([2.0, 2.0, np.sqrt(2), 3.0, np.nan])
+    result = wind_components(direction, speed)
+    # Wind from the north blows southward: v is negative and u is zero.
+    np.testing.assert_allclose(result.loc[0], [0, -2], atol=1e-12)
+    np.testing.assert_allclose(result.loc[1], [-2, 0], atol=1e-12)
+    np.testing.assert_allclose(result.loc[2], [1, 1], atol=1e-12)
+    assert result.loc[[3, 4]].isna().all().all()
+
+
+def test_wind_components_set_calm_hours_to_zero_without_a_label():
+    direction = pd.Series([None, "E", None])
+    speed = pd.Series([0.0, 0.0, 0.2])
+    result = wind_components(direction, speed)
+    # Calm air has no direction, so a missing label does not hide u = v = 0.
+    assert (result.loc[[0, 1]] == 0).all().all()
+    assert not np.signbit(result.loc[[0, 1]].to_numpy()).any()
+    # Moving air without a label still has an unknown direction.
+    assert result.loc[2].isna().all()
+
+
+@pytest.mark.parametrize(
+    "direction, speed",
+    [
+        (pd.Series(["N", "calm"]), pd.Series([1.0, 0.0])),
+        (pd.Series(["N"]), pd.Series([-1.0])),
+        (pd.Series(["N"]), pd.Series([1.0], index=[5])),
+    ],
+)
+def test_wind_components_reject_invalid_input(direction, speed):
+    with pytest.raises(ValueError):
+        wind_components(direction, speed)

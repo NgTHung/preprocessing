@@ -24,7 +24,6 @@ Use that wording only when the chapter actually contains the comparison. If a pa
 | Book introduction (`book/index.md`) | What analysis will I read and why? | Selected domains, dataset context, analytical questions, navigation |
 | Analysis notebooks (`book/*.ipynb`) | Why use this method and what does the experiment show? | Acquisition, theory, formulas, implementation, displayed measurements, interpretation |
 | Discussion (`book/report.md`) | Which choices does the evidence support? | Cross-method comparisons, links to notebook evidence, limitations, reproducibility, references |
-| Interactive examples (`book/interactive.md`) | How does this parameter affect the demonstration? | Labeled synthetic/sample inputs, controls, expected behavior, explanation and limitations |
 | Agent guide (`AGENTS.md`) | How should changes be made and validated? | Repository conventions, evaluation safeguards, verification and delivery rules |
 | Docstring | How do I call this helper and what does it guarantee? | Inputs, outputs, units, edge cases, errors, small examples where useful |
 | Dated record or task | What happened or what remains? | Date, scope, environment, commands, findings, limitations, status |
@@ -72,7 +71,7 @@ Mark Granger and Sentence Transformer sections as advanced where appropriate, wh
 
 - Course requirements: [docs/preprocessing.md](preprocessing.md).
 - Installation, environment maintenance, build, preview, and deployment instructions: [README.md](../README.md).
-- Navigation and reactive-cell authoring mechanics: [docs/book-authoring.md](book-authoring.md).
+- Navigation and chapter authoring mechanics: [docs/book-authoring.md](book-authoring.md).
 - Paths and the random seed: [src/preprocessing/__init__.py](../src/preprocessing/__init__.py).
 - Data provenance, acquisition, split definitions, method parameters, and measurements: the relevant analysis notebook.
 - Cross-method conclusions and limitations: [book/report.md](../book/report.md), with links to evidence.

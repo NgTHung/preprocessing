@@ -2,14 +2,28 @@
 
 Preprocessing choices need evidence from comparable experiments. This chapter
 provides prompts for connecting the time-series and text results to those choices
-and explaining the limits of each conclusion. It is a discussion scaffold; the
-analysis notebooks contain no dataset experiment results to interpret.
+and explaining the limits of each conclusion. Time-series EDA has executed
+evidence, while preprocessing comparisons, forecasting, and text experiments remain
+unfinished. The cross-method discussion below remains a scaffold for those results.
 
 ## Time series
 
+The [time-series EDA](01_time_series_eda.ipynb) retains native gaps on the hourly
+grid and reports observed endpoint pairs for each ACF lag. Its linear-interpolation
+sensitivity comparison shows why agreement in a screened lag order does not imply
+agreement in every PACF coefficient. At this sample size the pointwise PACF band
+flags coefficients too small to matter, so the chapter takes the candidate AR order
+from BIC on one common sample of complete lag windows and keeps the band rule as a
+diagnostic. Candidate orders require another comparison
+after notebook 02 selects its actual filling method; that check remains pending.
+STL, Ljung–Box, and Granger inputs will still need a documented complete-series
+treatment. Their results cannot be attributed to observed data alone after filling.
+
 Use the [time-series audit](01_time_series_eda.ipynb) to justify the dataset,
 sampling frequency, timestamp convention, and seasonal periods. Identify which
-patterns are observed and which explanations remain assumptions.
+patterns are observed and which explanations remain assumptions. Explain the
+station-selection rule, whether an alternative rule chooses the same station, and
+the limits of applying one station's results to the other 11.
 
 Use the [preprocessing experiments](02_time_series_preprocessing.ipynb) to address:
 
@@ -21,12 +35,15 @@ Use the [preprocessing experiments](02_time_series_preprocessing.ipynb) to addre
   explain the chosen seasonal period.
 - Anomalies: discuss detection rates and overlap, separating flagged observations
   from verified explanations for them.
-- Forecasting: compare Random Forest with persistence on the untouched chronological
-  test set. Explain feature availability, target alignment, and the use of test history.
+- Forecasting: compare Random Forest with persistence for PM2.5 and PM10 on the
+  untouched chronological test set. Explain feature availability, target alignment,
+  covariate choice, and the use of test history, and discuss where the targets differ.
 
 The advanced Granger section is also named in the rubric. If evaluated, discuss lag
-orders, stationarity, multiple comparisons, and the distinction between predictive
-relationships and real-world causation. If omitted, state the coverage limitation.
+orders, stationarity, multiple comparisons, effect sizes at large sample sizes,
+pairwise versus conditional tests, shared weather drivers, and the distinction
+between predictive relationships and real-world causation. If omitted, state the
+coverage limitation.
 
 ## Text
 
@@ -59,3 +76,12 @@ Report measured runtimes with their hardware and timing boundaries when relevant
 Cite dataset cards and method references. Record AI assistance and describe how
 the implementation and interpretations were checked. List any unexecuted section,
 unmet requirement, or reproduction step that needs external access.
+
+AI assisted the time-series EDA implementation and narrative, and the time-series
+preprocessing protocol, gap-mask, gap-filling, Ljung–Box, and wind-component
+helpers. Its evidence remains in executable notebook cells, with focused checks for
+lag spacing, pair counts, covariance normalization, mask selection, fill behavior,
+agreement with the statsmodels Ljung–Box statistic, and the preprocessing handoff.
+This does not establish
+student understanding or completed human review; the student must be able to
+explain the submitted code and statistical limitations at the oral exam.
