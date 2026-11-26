@@ -9,6 +9,7 @@ from scipy.stats import chi2
 from statsmodels.tsa.stattools import acovf, levinson_durbin
 
 FILL_METHODS = ("ffill", "linear", "polynomial", "cubic_spline")
+ROLLING_STATISTICS = ("mean", "std", "min", "max", "skew")
 
 
 def _grid_values(series: pd.Series) -> np.ndarray:
@@ -355,6 +356,58 @@ def _positive_int(value) -> bool:
         and isinstance(value, (int, np.integer))
         and value >= 1
     )
+
+
+def trailing_window_features(
+    series: pd.Series,
+    windows: Sequence[int],
+    *,
+    min_share: float,
+    statistics: Sequence[str] = ROLLING_STATISTICS,
+) -> pd.DataFrame:
+    """Rolling statistics over trailing windows that end at each grid point.
+
+    The row at grid point ``t`` summarizes the observed values at points
+    ``t - w + 1`` to ``t``, so it never uses a later observation. A value is
+    reported only when the whole window lies inside the series (the first
+    ``w - 1`` rows are warm-up) and at least ``ceil(min_share * w)`` of its
+    points are observed; otherwise it is NaN. Gaps are not filled. ``std``
+    uses denominator ``n - 1`` and ``skew`` is pandas' bias-corrected sample
+    skewness, which needs at least three observations.
+
+    Args:
+        series: Values on a regular DatetimeIndex grid; NaN marks gaps.
+        windows: Window lengths in grid steps, each at least 2.
+        min_share: Required observed share of each window, in (0, 1].
+        statistics: Names from :data:`ROLLING_STATISTICS`.
+
+    Returns:
+        A frame on ``series.index`` with one column per window and statistic,
+        named ``f"{series.name}_roll{w}_{statistic}"``, in series units
+        (skewness is unitless).
+
+    Raises:
+        ValueError: For an invalid grid, window, share, or statistic name.
+        TypeError: If the input is not a Series with a DatetimeIndex.
+    """
+    _grid_values(series)
+    if not 0 < min_share <= 1:
+        raise ValueError("min_share must be in (0, 1]")
+    unknown = sorted(set(statistics) - set(ROLLING_STATISTICS))
+    if unknown or not statistics:
+        raise ValueError(f"statistics must be a non-empty subset of {ROLLING_STATISTICS}")
+    if not windows or not all(_positive_int(w) and 2 <= w <= len(series) for w in windows):
+        raise ValueError("windows must be integers from 2 to len(series)")
+    columns = {}
+    warm = np.arange(len(series))
+    for window in windows:
+        min_count = int(np.ceil(min_share * window))
+        rolling = series.astype(float).rolling(window, min_periods=min_count)
+        complete = warm >= window - 1
+        for statistic in statistics:
+            values = getattr(rolling, statistic)().where(complete)
+            columns[f"{series.name}_roll{window}_{statistic}"] = values
+    return pd.DataFrame(columns, index=series.index)
 
 
 def fill_gaps(

@@ -19,6 +19,7 @@ from preprocessing.time_series import (
     gap_aware_pacf,
     pacf_lag_order,
     seeded_gap_mask,
+    trailing_window_features,
 )
 
 
@@ -331,3 +332,46 @@ def test_information_criteria_use_common_complete_windows_at_true_spacing():
 def test_information_criteria_reject_invalid_or_unsupported_lag(max_lag):
     with pytest.raises(ValueError):
         ar_information_criteria(hourly(np.random.default_rng(1).normal(size=200)), max_lag)
+
+
+def test_trailing_windows_use_only_current_and_earlier_points():
+    values = np.random.default_rng(11).normal(size=60)
+    values[[7, 20, 21]] = np.nan
+    series = hourly(values).rename("y")
+    result = trailing_window_features(series, [5], min_share=0.6)
+    for t in [10, 22, 59]:
+        window = series.iloc[t - 4:t + 1].dropna()
+        assert result.iloc[t]["y_roll5_mean"] == pytest.approx(window.mean())
+        assert result.iloc[t]["y_roll5_std"] == pytest.approx(window.std(ddof=1))
+        assert result.iloc[t]["y_roll5_min"] == window.min()
+        assert result.iloc[t]["y_roll5_max"] == window.max()
+        assert result.iloc[t]["y_roll5_skew"] == pytest.approx(window.skew())
+    # Changing a later value leaves every earlier row unchanged.
+    changed = series.copy()
+    changed.iloc[40] += 100
+    later = trailing_window_features(changed, [5], min_share=0.6)
+    pd.testing.assert_frame_equal(result.iloc[:40], later.iloc[:40])
+    assert not np.isclose(result.iloc[40]["y_roll5_mean"], later.iloc[40]["y_roll5_mean"])
+
+
+def test_trailing_windows_require_warmup_and_observed_share():
+    values = np.arange(30, dtype=float)
+    values[10:13] = np.nan
+    result = trailing_window_features(hourly(values).rename("y"), [4], min_share=0.75,
+                                      statistics=["mean"])
+    assert result["y_roll4_mean"].iloc[:3].isna().all()
+    assert result["y_roll4_mean"].iloc[3] == pytest.approx(1.5)
+    # Hours 10-12 are missing: windows ending at 11..14 hold fewer than 3 observations.
+    assert result["y_roll4_mean"].iloc[11:15].isna().all()
+    assert result["y_roll4_mean"].iloc[[10, 15]].notna().all()
+
+
+@pytest.mark.parametrize(
+    "windows, kwargs",
+    [([1], {"min_share": 0.5}), ([], {"min_share": 0.5}), ([3], {"min_share": 0}),
+     ([3], {"min_share": 1.5}), ([3], {"min_share": 0.5, "statistics": ["median"]}),
+     ([2.5], {"min_share": 0.5})],
+)
+def test_trailing_windows_reject_invalid_settings(windows, kwargs):
+    with pytest.raises(ValueError):
+        trailing_window_features(hourly(np.arange(10.0)), windows, **kwargs)
