@@ -1,49 +1,57 @@
 # Results and discussion
 
 Preprocessing choices need evidence from comparable experiments. This chapter
-provides prompts for connecting the time-series and text results to those choices
-and explaining the limits of each conclusion. Time-series EDA has executed
-evidence, while preprocessing comparisons, forecasting, and text experiments remain
-unfinished. The cross-method discussion below remains a scaffold for those results.
+connects the time-series and text results to those choices and states the limits of
+each conclusion. Both time-series chapters are executed; the text experiments remain
+unfinished, so the text section below is still a scaffold. Scores live in the
+notebooks, and this page links to the tables that own them.
 
 ## Time series
 
-The [time-series EDA](01_time_series_eda.ipynb) retains native gaps on the hourly
-grid and reports observed endpoint pairs for each ACF lag. Its linear-interpolation
-sensitivity comparison shows why agreement in a screened lag order does not imply
-agreement in every PACF coefficient. At this sample size the pointwise PACF band
-flags coefficients too small to matter, so the chapter takes the candidate AR order
-from BIC on one common sample of complete lag windows and keeps the band rule as a
-diagnostic. Candidate orders require another comparison
-after notebook 02 selects its actual filling method; that check remains pending.
-STL, Ljung–Box, and Granger inputs will still need a documented complete-series
-treatment. Their results cannot be attributed to observed data alone after filling.
+The [time-series EDA](01_time_series_eda.ipynb) chose Wanshouxigong by gap length,
+kept native gaps on the hourly grid, and took the candidate AR order from BIC because
+the pointwise PACF band flags coefficients too small to matter at this sample size.
+The station choice depends on the rule (`rule_comparison`), so every fitted parameter
+in the preprocessing chapter belongs to this station only.
 
-Use the [time-series audit](01_time_series_eda.ipynb) to justify the dataset,
-sampling frequency, timestamp convention, and seasonal periods. Identify which
-patterns are observed and which explanations remain assumptions. Explain the
-station-selection rule, whether an alternative rule chooses the same station, and
-the limits of applying one station's results to the other 11.
+The [preprocessing chapter](02_time_series_preprocessing.ipynb) supports these
+choices:
 
-Use the [preprocessing experiments](02_time_series_preprocessing.ipynb) to address:
+- Gap filling. Linear interpolation wins the pre-declared rank rule (`fill_selection`).
+  On isolated artificial gaps several methods tie; on block gaps shaped like the native
+  ones, linear interpolation is clearly best and higher-order fits overshoot
+  (`gap_fill_comparison`). Reconstruction errors are autocorrelated for almost every
+  method. Linear interpolation reads later observations, so it completes the training
+  series for the statistical tests only; forecast inputs use a causal forward fill.
+  Filling leaves the targets' screened and BIC lag orders unchanged
+  (`chosen_fill_dependence_check`).
+- Stationarity. ADF, KPSS, and Phillips-Perron agree that both targets are
+  level-stationary as observed, while every covariate needs one difference
+  (`stationarity_choice`). The tests do not address the changing variance seen in the
+  EDA, and the Box-Cox fit for pressure is numerically degenerate.
+- Decomposition. The lowest residual variance ratio belongs to a non-robust STL whose
+  seasonal component overfits (strongly negative residual ACF at 24 hours). Robust STL
+  keeps episodes in the residual and is the basis for the anomaly section; the weekly
+  MSTL component absorbs episodes rather than a weekly cycle (`decomposition_comparison`).
+- Anomalies. The three detectors flag different hours with low Jaccard overlap
+  (`anomaly_overlap`). Episodes confirmed by two detectors include the nights of Lunar
+  New Year and the Lantern Festival, which fits a fireworks hypothesis the data cannot
+  confirm (`anomaly_episodes`).
+- Granger tests. Nearly every pair is significant after Benjamini-Hochberg correction,
+  so the chapter reports effect sizes and draws only edges that remove at least 1% of
+  the residual sum of squares (`granger_results`). The edges are predictive, linear,
+  and may reflect shared drivers such as the daily cycle.
+- Forecasting. On the test interval the Random Forest improves on persistence by a
+  few percent for PM2.5 and by about one percent for PM10 (`forecast_skill`). On
+  validation the selected PM10 configuration is worse than persistence, and the
+  ablation shows that the long rolling windows hurt both targets while the covariates
+  help most (`forecast_ablation`). The test interval was scored once with the declared
+  protocol, and the model was not adjusted afterwards.
 
-- Gap filling: compare MAE/RMSE on the shared artificial mask and interpret residual
-  autocorrelation. State which methods are suitable only for retrospective use.
-- Stationarity: interpret ADF, KPSS, and Phillips-Perron results before and after
-  transformations, accounting for their different null hypotheses.
-- Decomposition: compare residual variance ratios over the same valid interval and
-  explain the chosen seasonal period.
-- Anomalies: discuss detection rates and overlap, separating flagged observations
-  from verified explanations for them.
-- Forecasting: compare Random Forest with persistence for PM2.5 and PM10 on the
-  untouched chronological test set. Explain feature availability, target alignment,
-  covariate choice, and the use of test history, and discuss where the targets differ.
-
-The advanced Granger section is also named in the rubric. If evaluated, discuss lag
-orders, stationarity, multiple comparisons, effect sizes at large sample sizes,
-pairwise versus conditional tests, shared weather drivers, and the distinction
-between predictive relationships and real-world causation. If omitted, state the
-coverage limitation.
+Open questions remain. A feature-group selection step declared in advance, a test of
+whether the forecast differences are significant (for example Diebold-Mariano), and a
+second station would each strengthen or weaken these conclusions. The Granger section
+is advanced in the brief and is evaluated here with the limits above.
 
 ## Text
 
@@ -77,11 +85,11 @@ Cite dataset cards and method references. Record AI assistance and describe how
 the implementation and interpretations were checked. List any unexecuted section,
 unmet requirement, or reproduction step that needs external access.
 
-AI assisted the time-series EDA implementation and narrative, and the time-series
-preprocessing protocol, gap-mask, gap-filling, Ljung–Box, and wind-component
+AI assisted the time-series EDA and preprocessing implementations and narratives,
+including the gap-mask, gap-filling, Ljung-Box, rolling-window, and wind-component
 helpers. Its evidence remains in executable notebook cells, with focused checks for
 lag spacing, pair counts, covariance normalization, mask selection, fill behavior,
-agreement with the statsmodels Ljung–Box statistic, and the preprocessing handoff.
+agreement with the statsmodels Ljung-Box statistic, trailing-window alignment, and the preprocessing handoff.
 This does not establish
 student understanding or completed human review; the student must be able to
 explain the submitted code and statistical limitations at the oral exam.
