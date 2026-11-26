@@ -81,7 +81,6 @@ processed data, model weights, and caches out of Git. Store experiment exports i
 | [Text EDA](book/03_text_eda.ipynb) | Label audit, document lengths, vocabulary, Zipf distribution |
 | [Text preprocessing](book/04_text_preprocessing.ipynb) | Normalization, tokenization, ablations, representations, embedding extension |
 | [Discussion](book/report.md) | Evidence-based comparisons and limitations |
-| [Interactive examples](book/interactive.md) | Synthetic rolling-window and sample-text demonstrations |
 | [Shared Python package](src/preprocessing/) | Project paths and `RANDOM_STATE`; dataset download, audit, and split helpers, tested in `tests/` |
 
 Follow [AGENTS.md](AGENTS.md) for development and evaluation rules and the
@@ -99,9 +98,9 @@ $env:PYTHONUTF8 = "1"
 uv run --locked --directory book jupyter book build --html --execute --strict --execute-parallel 1 --ci
 ```
 
-In PowerShell, `PYTHONUTF8` makes the Python plugin read MyST's UTF-8 JSON without
-corrupting punctuation or equation symbols on Windows. Keep it set for builds and
-previews in that shell.
+In PowerShell, `PYTHONUTF8` makes Python use UTF-8 for file and console I/O on
+Windows, so punctuation and equation symbols in notebook output are not corrupted.
+Keep it set for builds and previews in that shell.
 
 HTML is written to `book/_build/html/`. `--execute` runs notebook code and
 `--strict` fails on reported warnings or errors. MyST can reuse execution caches.
@@ -128,14 +127,14 @@ Open <http://localhost:8000>. Check equations, references, tables, and displayed
 outputs. Before submission, execute the full book with the actual datasets from a
 fresh environment. A passing scaffold build does not establish completed analysis.
 
-See [Book authoring](docs/book-authoring.md) for navigation and reactive-cell rules.
+See [Book authoring](docs/book-authoring.md) for navigation and chapter rules.
 
 ## Publish on GitHub Pages
 
 [pages.yml](.github/workflows/pages.yml) installs the locked environment, lints and
-tests shared Python code, checks the marimo plugin, executes notebooks, and builds strict
-HTML. Pull requests validate the build. Pushes to `main` and manual workflow runs
-deploy after a successful build. CI uses a fresh checkout without execution caches.
+tests shared Python code, executes notebooks, and builds strict HTML. Pull requests
+validate the build. Pushes to `main` and manual workflow runs deploy after a
+successful build. CI uses a fresh checkout without execution caches.
 
 Select GitHub Actions as the source in repository Settings → Pages. The workflow
 derives `BASE_URL` from the repository name for project-site links and assets. Use
@@ -157,7 +156,6 @@ gh workflow run pages.yml
 ```powershell
 uv run --locked ruff check src tests
 uv run --locked pytest
-node --input-type=module -e "await import('./book/plugins/marimo.mjs')"
 uv export --locked --no-hashes --no-emit-project --output-file requirements.txt
 ```
 

@@ -27,12 +27,6 @@ The repository README lists their public sources and setup instructions. The EDA
 chapters own provenance, constraint checks, and evaluation splits. Time-series
 EDA uses the verified UCI archive; text acquisition remains a commented example.
 
-## Explore a single preprocessing choice
-
-The [interactive examples](interactive.md) show how a rolling window changes a
-synthetic series and how normalization changes sample text. Their controls help
-explain individual operations; they do not replace experiments on the chosen data.
-
 ## Read the evidence
 
 Each completed technique needs theory and formulas, executable code, displayed

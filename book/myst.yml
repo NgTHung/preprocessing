@@ -5,8 +5,6 @@ project:
   description: "Time-series and text EDA, preprocessing, and impact assessment."
   authors:
     - name: "TODO: Student name and student ID"
-  plugins:
-    - plugins/marimo.mjs
   toc:
     - file: index.md
     - title: "Part (a): Time series"
@@ -20,8 +18,5 @@ project:
     - title: Discussion
       children:
         - file: report.md
-    - title: Interactive examples
-      children:
-        - file: interactive.md
 site:
   template: book-theme
