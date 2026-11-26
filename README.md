@@ -1,12 +1,15 @@
 # Data preprocessing
 
-This Python project provides a Jupyter Book scaffold for comparing time-series and
+This Python project provides a Jupyter Book for comparing time-series and
 text preprocessing methods in the HCMUS Data Mining course. The notebooks organize
 data acquisition, statistical analysis, and evaluation so readers can examine the
 evidence behind each preprocessing choice.
 
-The analysis cells are unfinished prompts; no dataset experiment results are
-included. The scaffold builds without downloading datasets or model weights.
+The time-series EDA chapter contains executed timestamp and missingness audits,
+training-only summaries, gap-aware ACF/PACF, interpolation sensitivity, and rolling
+statistics. Preprocessing experiments, forecasting, and text analyses remain
+unfinished. Building the book downloads the Beijing archive on first use; no model
+weights are required for the implemented EDA.
 
 Student name: TODO. Student ID (MSSV): TODO.
 
@@ -61,9 +64,10 @@ and LeCun, "Character-level Convolutional Networks for Text Classification", Neu
 [AG corpus](http://groups.di.unipi.it/~gulli/AG_corpus_of_news_articles.html) is
 distributed for research and non-commercial use.
 
-The EDA notebooks contain commented acquisition examples. Enable them to prepare
-the data. The UCI archive also contains unrelated files (`data.csv`, `test.csv`, and
-an image); the example reads only the station archive inside it. Keep raw data,
+The time-series notebooks load and checksum-verify the UCI archive automatically;
+the text EDA notebook retains a commented acquisition example. The UCI archive
+also contains unrelated files (`data.csv`, `test.csv`, and an image); the loader
+reads only the station archive inside it. Keep raw data,
 processed data, model weights, and caches out of Git. Store experiment exports in
 `outputs/`.
 

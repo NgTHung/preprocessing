@@ -1,4 +1,4 @@
-"""Acquisition, audit, and chronological splitting for the Beijing air-quality data.
+"""Acquisition, audit, wind encoding, and splitting for the Beijing air-quality data.
 
 The UCI archive (dataset 501) holds hourly readings from 12 stations between
 2013-03-01 00:00 and 2017-02-28 23:00. Timestamps are local Beijing time
@@ -11,6 +11,7 @@ import zipfile
 from pathlib import Path
 from urllib.request import urlretrieve
 
+import numpy as np
 import pandas as pd
 
 from preprocessing import RAW_DATA_DIR
@@ -137,6 +138,8 @@ def audit_stations(
           duplicated hours, the first record is used.
         - ``long_gap_missing_share``: fraction of those missing grid hours that
           lie in gaps longer than ``long_gap_hours``; 0.0 when none are missing.
+        - ``long_gap_missing_hours``: number of missing grid hours that lie in
+          gaps longer than ``long_gap_hours``.
     """
     rows = {}
     for station, group in frame.groupby("station", sort=True):
@@ -159,6 +162,7 @@ def audit_stations(
             "long_gap_missing_share": (
                 float(gaps[gaps > long_gap_hours].sum() / gaps.sum()) if len(gaps) else 0.0
             ),
+            "long_gap_missing_hours": int(gaps[gaps > long_gap_hours].sum()),
         }
     return pd.DataFrame.from_dict(rows, orient="index").rename_axis("station")
 
@@ -182,6 +186,49 @@ def audit_columns(
         for column in columns
     }
     return pd.concat(audits, names=["variable", "station"])
+
+
+COMPASS_LABELS = (
+    "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+    "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW",
+)
+
+
+def wind_components(direction: pd.Series, speed: pd.Series) -> pd.DataFrame:
+    """Convert compass labels and wind speed into ``u`` and ``v`` components.
+
+    Labels follow the meteorological convention: ``direction`` names where the
+    wind blows from, and the 16 labels map to angles ``theta`` in 22.5-degree
+    steps clockwise from north. The components are ``u = -speed * sin(theta)``
+    (positive toward the east) and ``v = -speed * cos(theta)`` (positive toward
+    the north), in the units of ``speed`` (m/s for WSPM).
+
+    A zero speed gives ``u = v = 0`` whatever the label, because calm air has
+    no direction; this covers calm hours without a recorded label. Otherwise a
+    missing label or speed leaves both components missing, and no direction is
+    inferred.
+
+    Raises:
+        ValueError: If the indexes differ, a label is not one of
+            :data:`COMPASS_LABELS`, or a speed is negative.
+    """
+    if not direction.index.equals(speed.index):
+        raise ValueError("direction and speed must share one index")
+    unknown = sorted(set(direction.dropna()) - set(COMPASS_LABELS))
+    if unknown:
+        raise ValueError(f"unknown wind direction labels: {unknown}")
+    if (speed < 0).any():
+        raise ValueError("wind speed must be non-negative")
+    degrees = {label: 22.5 * i for i, label in enumerate(COMPASS_LABELS)}
+    theta = np.deg2rad(direction.map(degrees).astype(float))
+    speed = speed.astype(float)
+    calm = speed.eq(0)
+    return pd.DataFrame(
+        {
+            "u": (-speed * np.sin(theta)).mask(calm, 0.0),
+            "v": (-speed * np.cos(theta)).mask(calm, 0.0),
+        }
+    )
 
 
 def chronological_split(data, *, validation_start, test_start):

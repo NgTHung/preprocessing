@@ -14,6 +14,7 @@ from preprocessing.air_quality import (
     chronological_split,
     download_air_quality,
     read_stations,
+    wind_components,
 )
 
 COLUMNS = ["No", "year", "month", "day", "hour", "PM2.5", "station"]
@@ -152,6 +153,7 @@ def test_audit_reports_share_of_missing_hours_in_long_gaps():
     audit = audit_stations(station_frame("A", values), long_gap_hours=2).loc["A"]
 
     assert audit["long_gap_missing_share"] == pytest.approx(3 / 4)
+    assert audit["long_gap_missing_hours"] == 3
 
 
 def test_audit_treats_gap_equal_to_threshold_as_short():
@@ -160,6 +162,7 @@ def test_audit_treats_gap_equal_to_threshold_as_short():
     audit = audit_stations(station_frame("A", values), long_gap_hours=2).loc["A"]
 
     assert audit["long_gap_missing_share"] == 0.0
+    assert audit["long_gap_missing_hours"] == 0
 
 
 def test_audit_reports_zero_long_gap_share_without_missing_values():
@@ -240,3 +243,38 @@ def test_split_rejects_empty_test_interval():
         chronological_split(
             series, validation_start="2016-01-01 02:00", test_start="2017-01-01"
         )
+
+
+def test_wind_components_follow_meteorological_convention():
+    direction = pd.Series(["N", "E", "SW", None, "S"])
+    speed = pd.Series([2.0, 2.0, np.sqrt(2), 3.0, np.nan])
+    result = wind_components(direction, speed)
+    # Wind from the north blows southward: v is negative and u is zero.
+    np.testing.assert_allclose(result.loc[0], [0, -2], atol=1e-12)
+    np.testing.assert_allclose(result.loc[1], [-2, 0], atol=1e-12)
+    np.testing.assert_allclose(result.loc[2], [1, 1], atol=1e-12)
+    assert result.loc[[3, 4]].isna().all().all()
+
+
+def test_wind_components_set_calm_hours_to_zero_without_a_label():
+    direction = pd.Series([None, "E", None])
+    speed = pd.Series([0.0, 0.0, 0.2])
+    result = wind_components(direction, speed)
+    # Calm air has no direction, so a missing label does not hide u = v = 0.
+    assert (result.loc[[0, 1]] == 0).all().all()
+    assert not np.signbit(result.loc[[0, 1]].to_numpy()).any()
+    # Moving air without a label still has an unknown direction.
+    assert result.loc[2].isna().all()
+
+
+@pytest.mark.parametrize(
+    "direction, speed",
+    [
+        (pd.Series(["N", "calm"]), pd.Series([1.0, 0.0])),
+        (pd.Series(["N"]), pd.Series([-1.0])),
+        (pd.Series(["N"]), pd.Series([1.0], index=[5])),
+    ],
+)
+def test_wind_components_reject_invalid_input(direction, speed):
+    with pytest.raises(ValueError):
+        wind_components(direction, speed)
