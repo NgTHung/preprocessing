@@ -2,8 +2,9 @@
 
 Preprocessing choices need evidence from comparable experiments. This chapter
 connects the time-series and text results to those choices and states the limits of
-each conclusion. Both time-series chapters are executed; the text experiments remain
-unfinished, so the text section below is still a scaffold. Scores live in the
+each conclusion. Both time-series chapters and the text EDA are executed; the text
+preprocessing experiments remain unfinished, so that part of the text section is still
+a scaffold. Scores live in the
 notebooks, and this page links to the tables that own them.
 
 ## Time series
@@ -55,9 +56,27 @@ is advanced in the brief and is evaluated here with the limits above.
 
 ## Text
 
-Use the [text audit](03_text_eda.ipynb) to interpret document lengths, vocabulary,
-and the Zipf plot. Account for counting conventions and sample-size effects before
-attributing differences to labels.
+The [text EDA](03_text_eda.ipynb) describes the raw published text, so its counts
+include encoding residue. It supports these points for the preprocessing chapter:
+
+- Data quality. The splits are balanced and free of empty, repeated, or exactly shared
+  texts, but about one test article in nine has a training article at TF-IDF cosine
+  0.9 or above, and roughly a tenth of those pairs carry different topics, mostly
+  Business against Sci/Tech (`agreement_by_similarity`, `conflict_pairs`). Test
+  scores therefore include some near-copies of training text, and label noise caps
+  attainable accuracy. Near-duplicates within the training split were not searched.
+- Markup. About a quarter of articles contain entities that lost their `&`, a tenth
+  contain literal backslashes, and escaped Reuters links contribute frequent link
+  fragments; mentions and hashtags are essentially absent (`markup_prevalence`). Wire
+  tags differ strongly by topic and could act as a source shortcut.
+- Length. All topic pairs differ significantly, but every rank-biserial effect is
+  small, so length is a weak topic signal (`length_tests`).
+- Vocabulary. Function words and residue tokens fill the raw top-50 tables, while
+  content tokens separate the topics clearly. At fixed token budgets, Sci/Tech has the
+  highest type-token ratio and Business the lowest (`budget_ttr`).
+- Zipf. With log-spaced ranks the exponent is close to 1, but an all-rank fit gives a
+  much larger value and the curve bends away from a single power law at both ends
+  (`zipf_fit_comparison`, `zipf_by_rank_range`).
 
 Use the [preprocessing experiments](04_text_preprocessing.ipynb) to address:
 
@@ -90,6 +109,9 @@ including the gap-mask, gap-filling, Ljung-Box, rolling-window, and wind-compone
 helpers. Its evidence remains in executable notebook cells, with focused checks for
 lag spacing, pair counts, covariance normalization, mask selection, fill behavior,
 agreement with the statsmodels Ljung-Box statistic, trailing-window alignment, and the preprocessing handoff.
-This does not establish
+AI also assisted the text EDA implementation and narrative, including the
+descriptive tokenizer, pairwise Mann-Whitney and rank-biserial helper, fixed-budget
+TTR sampler, Zipf fit, and the near-duplicate search, each with focused tests. This
+does not establish
 student understanding or completed human review; the student must be able to
 explain the submitted code and statistical limitations at the oral exam.

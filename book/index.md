@@ -10,7 +10,9 @@ Student name and student ID: TODO.
 Both time-series chapters are executed: the EDA audits the data and describes its
 temporal structure, and the preprocessing chapter compares gap filling,
 transformations, decompositions, anomaly detectors, Granger tests, and a Random
-Forest forecast. The text analyses remain unfinished.
+Forest forecast. The text EDA chapter audits AG News and describes lengths,
+vocabulary, and the Zipf distribution of the raw text; the text preprocessing chapter
+remains unfinished.
 
 ## Questions and chapters
 
