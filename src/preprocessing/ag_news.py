@@ -2,7 +2,9 @@
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from preprocessing import RAW_DATA_DIR
 
@@ -92,3 +94,48 @@ def count_overlap(
     if normalize:
         train_text, test_text = _normalized(train_text), _normalized(test_text)
     return int(test_text.isin(set(train_text)).sum())
+
+
+def nearest_train_similarity(
+    train: pd.DataFrame,
+    test: pd.DataFrame,
+    text_col: str = "text",
+    batch_size: int = 256,
+) -> pd.DataFrame:
+    """Find each test text's most similar training text by TF-IDF cosine.
+
+    The vectorizer is fitted on training text only, with scikit-learn's English
+    stop-word list removed so that shared function words do not dominate the
+    similarity. Test words absent from the training vocabulary are ignored.
+    The scan is exhaustive (no approximate index) and processes test rows in
+    batches to bound memory.
+
+    Args:
+        train, test: Frames with a text column; missing text counts as empty.
+        text_col: Name of that column.
+        batch_size: Test rows per sparse matrix product.
+
+    Returns:
+        Frame indexed like ``test`` with ``train_position`` (positional index
+        into ``train``) and ``cosine`` in [0, 1]. Test rows with no in-vocabulary
+        word get ``train_position = -1`` and ``cosine = 0``.
+    """
+
+    vectorizer = TfidfVectorizer(stop_words="english", dtype=np.float32)
+    train_matrix = vectorizer.fit_transform(train[text_col].fillna(""))
+    test_matrix = vectorizer.transform(test[text_col].fillna(""))
+    train_transposed = train_matrix.T.tocsr()
+
+    positions = np.full(test_matrix.shape[0], -1, dtype=np.int64)
+    cosine = np.zeros(test_matrix.shape[0], dtype=np.float64)
+    for start in range(0, test_matrix.shape[0], batch_size):
+        # Rows are L2-normalized, so the dot product is the cosine similarity.
+        scores = (test_matrix[start : start + batch_size] @ train_transposed).toarray()
+        best = scores.argmax(axis=1)
+        best_score = scores[np.arange(len(best)), best]
+        found = best_score > 0
+        positions[start : start + len(best)][found] = best[found]
+        cosine[start : start + len(best)] = np.minimum(best_score, 1.0)
+    return pd.DataFrame(
+        {"train_position": positions, "cosine": cosine}, index=test.index
+    )

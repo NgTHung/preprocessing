@@ -8,9 +8,12 @@ evidence behind each preprocessing choice.
 The time-series chapters contain executed analyses: timestamp and missingness
 audits, gap-aware ACF/PACF, gap-filling comparisons, stationarity tests,
 decompositions, calendar and rolling features, anomaly detectors, Granger tests, and
-a one-step Random Forest forecast against persistence. Text analyses remain
-unfinished. Building the book downloads the Beijing archive on first use; no model
-weights are required for the time-series chapters.
+a one-step Random Forest forecast against persistence. The text EDA chapter is
+executed: a label, overlap, and near-duplicate audit of AG News, markup prevalence,
+length tests, frequency tables, type-token ratios, and a Zipf analysis. The text
+preprocessing chapter remains unfinished. Building the book downloads the Beijing
+archive and the pinned AG News revision on first use; no model weights are required
+for the executed chapters.
 
 Student name: TODO. Student ID (MSSV): TODO.
 
@@ -66,7 +69,8 @@ and LeCun, "Character-level Convolutional Networks for Text Classification", Neu
 distributed for research and non-commercial use.
 
 The time-series notebooks load and checksum-verify the UCI archive automatically;
-the text EDA notebook retains a commented acquisition example. The UCI archive
+the text EDA notebook downloads AG News at the pinned revision through
+`preprocessing.ag_news.load_ag_news` and caches it under `data/raw/huggingface`. The UCI archive
 also contains unrelated files (`data.csv`, `test.csv`, and an image); the loader
 reads only the station archive inside it. Keep raw data,
 processed data, model weights, and caches out of Git. Store experiment exports in
