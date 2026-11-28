@@ -7,6 +7,9 @@ The UCI archive (dataset 501) holds hourly readings from 12 stations between
 
 import hashlib
 import io
+import os
+import tempfile
+import time
 import zipfile
 from pathlib import Path
 from urllib.request import urlretrieve
@@ -59,14 +62,39 @@ def download_air_quality(
         return path
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    partial = path.with_name(path.name + ".part")
-    urlretrieve(url, partial)
-    digest = _sha256(partial)
-    if digest != sha256:
-        partial.unlink()
-        raise ValueError(f"SHA-256 of {url} is {digest}, expected {sha256}")
-    partial.replace(path)
+    # Notebooks can execute in parallel, so each call downloads to its own
+    # temporary file and only a verified archive is moved into place.
+    with tempfile.NamedTemporaryFile(
+        dir=path.parent, prefix=path.name + ".", suffix=".part", delete=False
+    ) as handle:
+        partial = Path(handle.name)
+    try:
+        urlretrieve(url, partial)
+        digest = _sha256(partial)
+        if digest != sha256:
+            raise ValueError(f"SHA-256 of {url} is {digest}, expected {sha256}")
+        _move_into_place(partial, path, sha256)
+    finally:
+        partial.unlink(missing_ok=True)
     return path
+
+
+def _move_into_place(partial: Path, path: Path, sha256: str, attempts: int = 50) -> None:
+    # POSIX renames are atomic. Windows refuses to replace a file that a
+    # concurrent call is renaming or reading; if that call has already stored
+    # a verified archive, keep it, otherwise wait briefly and retry.
+    for _ in range(attempts):
+        try:
+            os.replace(partial, path)
+            return
+        except PermissionError:
+            try:
+                if path.exists() and _sha256(path) == sha256:
+                    return
+            except PermissionError:
+                pass
+            time.sleep(0.1)
+    raise PermissionError(f"could not store {path} after {attempts} attempts")
 
 
 def read_stations(archive_path: Path) -> pd.DataFrame:
