@@ -11,9 +11,12 @@ decompositions, calendar and rolling features, anomaly detectors, Granger tests,
 a one-step Random Forest forecast against persistence. The text EDA chapter is
 executed: a label, overlap, and near-duplicate audit of AG News, markup prevalence,
 length tests, frequency tables, type-token ratios, and a Zipf analysis. The text
-preprocessing chapter remains unfinished. Building the book downloads the Beijing
-archive and the pinned AG News revision on first use; no model weights are required
-for the executed chapters.
+preprocessing chapter is executed: a normalization pipeline, four tokenizers with test
+OOV rates, stop-word, stemming, and lemmatization ablations, BoW, TF-IDF, and Word2Vec
+representations, and the advanced Sentence Transformer comparison, all under one
+cross-validation protocol, followed by one test-split evaluation. Building the book
+downloads the Beijing archive, the pinned AG News revision, NLTK resources, and the
+pinned `all-MiniLM-L6-v2` model on first use.
 
 Student name: TODO. Student ID (MSSV): TODO.
 

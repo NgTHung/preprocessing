@@ -2,10 +2,8 @@
 
 Preprocessing choices need evidence from comparable experiments. This chapter
 connects the time-series and text results to those choices and states the limits of
-each conclusion. Both time-series chapters and the text EDA are executed; the text
-preprocessing experiments remain unfinished, so that part of the text section is still
-a scaffold. Scores live in the
-notebooks, and this page links to the tables that own them.
+each conclusion. All four analysis chapters are executed. Scores live in the notebooks, and this page
+links to the tables that own them.
 
 ## Time series
 
@@ -78,20 +76,53 @@ include encoding residue. It supports these points for the preprocessing chapter
   much larger value and the curve bends away from a single power law at both ends
   (`zipf_fit_comparison`, `zipf_by_rank_range`).
 
-Use the [preprocessing experiments](04_text_preprocessing.ipynb) to address:
+The [preprocessing chapter](04_text_preprocessing.ipynb) scores every variant on the
+same 30,000 training articles and five folds, with learned transforms fitted inside the
+folds, and reads the test split only for tokenizer OOV and one final evaluation. It
+supports these conclusions:
 
-- Normalization: explain measured vocabulary and length changes, including any
-  topic cues removed by digit, punctuation, or HTML-entity handling.
-- Tokenization: compare vocabulary size, token lengths, and OOV rates under explicit
-  unit and denominator definitions.
-- Ablations: interpret the effect of stop-word removal, stemming, and lemmatization
-  under the same validation protocol.
-- Representations: compare dimensions, sparsity, cosine similarities, and silhouette
-  scores. Distinguish visual patterns in t-SNE from evidence in the feature space.
+- Normalization. Lowercasing and removing digits and symbols shrink the vocabulary to
+  under half its raw size and give the only clear classification gain
+  (`normalization_effects`, `normalization_cv`). Repairing entities, stripping HTML,
+  and splitting backslashes clean about a third of articles but slightly lower
+  macro-F1 on their own, because escaped stock-quote links were topic cues for
+  Business and Sci/Tech. Removing wire tags and datelines lowers macro-F1 on all five
+  folds, so the source shortcut found in the EDA is real, though smaller than the gain
+  from normalization. Scores with the markers kept overstate accuracy on text from
+  other sources.
+- Tokenization. Word-level OOV on the test split is small by tokens and large by
+  types, as Zipf's law predicts; characters and a 30,000-entry BPE vocabulary have no
+  unknown units, and BPE splits few words. The sentence-level rate measures repeated
+  sentences, not coverage, and is not comparable with the others
+  (`tokenization_comparison`).
+- Stop words. Removal shortens articles a lot and the vocabulary very little, leaves
+  mean MI almost unchanged, and helps Naive Bayes but not logistic regression beyond
+  fold noise. Several stop words (`its`, `his`, `he`) rank among the most informative
+  terms (`stop_word_summary`, `stop_word_mi`, `stop_word_cv`).
+- Stemming and lemmatization. Porter and Snowball merge about half of the word types,
+  including unrelated words such as `general` and `generous`; WordNet merges fewer and
+  more accurately. No method changes classification beyond fold noise at this
+  training size (`collision_table`, `stemming_cv`).
+- Representations. Silhouette and same-topic cosine favor averaged Word2Vec vectors,
+  while sparse unigram TF-IDF classifies best; bigrams and trigrams add features faster
+  than evidence. Separation measured in a feature space and accuracy of a linear model
+  are different properties (`representation_summary`, `representation_cv`).
+- Sentence Transformer (advanced). Pretrained `all-MiniLM-L6-v2` embeddings, pinned to
+  a model revision, cluster by topic far better than TF-IDF and classify better with
+  `LinearSVC` when both are trained on the same 8,000 articles (`clustering_comparison`,
+  `embedding_cv`). No test article was truncated.
+- Final evaluation. The pipeline selected by the pre-declared rule (full normalization,
+  unigram TF-IDF, no stop-word removal or stemming) beats raw text on the test split in
+  the same direction as cross-validation, and excluding test articles with a near-copy
+  in training barely changes any score (`final_results`, `final_per_class_f1`).
 
-The advanced Sentence Transformer section is also named in the rubric. If evaluated,
-compare its K-Means and Linear SVM results with TF-IDF under the same splits, and
-discuss truncation and model revision. If omitted, state the coverage limitation.
+Limits of these conclusions: the comparisons use a 30,000-article subset for runtime,
+and the Sentence Transformer comparison an 8,000-article subset because embeddings are
+computed on CPU in CI, so the ranking of TF-IDF and embeddings may change with more
+labeled data. Choices were made greedily one decision at a time, so interactions
+between steps were not searched. Each test score comes from one fit on one split.
+Part-of-speech tags for the WordNet lemmatizer come from lowercase text without
+punctuation, which lowers their accuracy.
 
 ## Limitations and reproducibility
 
@@ -111,7 +142,13 @@ lag spacing, pair counts, covariance normalization, mask selection, fill behavio
 agreement with the statsmodels Ljung-Box statistic, trailing-window alignment, and the preprocessing handoff.
 AI also assisted the text EDA implementation and narrative, including the
 descriptive tokenizer, pairwise Mann-Whitney and rank-biserial helper, fixed-budget
-TTR sampler, Zipf fit, and the near-duplicate search, each with focused tests. This
+TTR sampler, Zipf fit, and the near-duplicate search, each with focused tests.
+AI also assisted the text preprocessing implementation and narrative, including the
+normalization steps, OOV, collision-rate, mutual-information, sparsity, and pair
+sampling helpers, the fold-local Word2Vec transformer, and the CPU-only embedding
+setup. Their tests cover entity repair on AG News patterns, agreement with the
+scikit-learn mutual information score, empty and all-OOV inputs, label constraints on
+sampled pairs, and Word2Vec reproducibility across processes. This
 does not establish
 student understanding or completed human review; the student must be able to
 explain the submitted code and statistical limitations at the oral exam.
