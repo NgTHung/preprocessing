@@ -278,3 +278,22 @@ def test_wind_components_set_calm_hours_to_zero_without_a_label():
 def test_wind_components_reject_invalid_input(direction, speed):
     with pytest.raises(ValueError):
         wind_components(direction, speed)
+
+
+def test_download_tolerates_concurrent_writer(tmp_path):
+    # Jupyter Book can execute notebooks 01 and 02 at the same time; both
+    # download the archive into the same directory.
+    from concurrent.futures import ThreadPoolExecutor
+
+    source = write_uci_archive(tmp_path / "source.zip", {"A": station_csv("A", [])})
+    raw = tmp_path / "raw"
+    callers = 8
+
+    def download(_):
+        return download_air_quality(raw, url=source.as_uri(), sha256=sha256(source))
+
+    with ThreadPoolExecutor(callers) as pool:
+        paths = list(pool.map(download, range(callers)))
+
+    assert all(path.read_bytes() == source.read_bytes() for path in paths)
+    assert list(paths[0].parent.glob("*.part")) == []
