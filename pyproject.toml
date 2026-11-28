@@ -30,6 +30,7 @@ dependencies = [
 [project.optional-dependencies]
 embeddings = [
     "sentence-transformers>=6.3.0",
+    "torch>=2.15.0",
 ]
 
 [build-system]
@@ -46,3 +47,13 @@ dev = [
     "pytest>=9.2.0",
     "ruff>=0.17.6",
 ]
+
+# CPU wheels keep the embeddings extra small: the default PyPI torch wheel for
+# Linux pulls several gigabytes of CUDA libraries that the book never uses.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }

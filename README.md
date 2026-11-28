@@ -28,7 +28,7 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and
 Run all commands below from the repository root:
 
 ```powershell
-uv sync --locked
+uv sync --locked --extra embeddings
 uv run --locked jupyter lab
 ```
 
@@ -41,15 +41,18 @@ editor requires a named kernel, register it with:
 uv run --locked python -m ipykernel install --user --name preprocessing --display-name "Preprocessing (uv)"
 ```
 
-The advanced Sentence Transformer comparison requires the `embeddings` extra:
+The `embeddings` extra installs `sentence-transformers` and CPU-only PyTorch,
+which the advanced Sentence Transformer section of the
+[text preprocessing notebook](book/04_text_preprocessing.ipynb) requires. uv takes
+`torch` from the PyTorch CPU index configured in `pyproject.toml`; installing
+`requirements.txt` with pip needs
+`--extra-index-url https://download.pytorch.org/whl/cpu` for the same wheel.
 
-```powershell
-uv sync --locked --extra embeddings
-```
-
-Model weights and NLTK resources are separate downloads. The
-[text preprocessing notebook](book/04_text_preprocessing.ipynb) contains resource
-preparation prompts. Record model revisions and download steps with the experiment.
+The text preprocessing notebook downloads its NLTK resources into
+`data/raw/nltk_data` and the
+[`sentence-transformers/all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+model (Apache-2.0, revision `1110a243fdf4706b3f48f1d95db1a4f5529b4d41`, about
+90 MB) into `data/raw/huggingface` on first run. Both stay outside version control.
 
 ## Prepare data
 
@@ -145,9 +148,9 @@ Select GitHub Actions as the source in repository Settings → Pages. The workfl
 derives `BASE_URL` from the repository name for project-site links and assets. Use
 an empty `BASE_URL` if hosting at a domain's root instead.
 
-If a chapter requires embeddings, add `--extra embeddings` to the workflow's sync
-command. Include dataset and language-resource preparation in notebooks or imported
-helpers so a fresh runner can reproduce the analysis.
+The workflow syncs the `embeddings` extra so the Sentence Transformer section
+executes in CI. Dataset, NLTK, and model downloads happen inside the notebooks, so
+a fresh runner reproduces the analysis without manual steps.
 
 Inspect runs or request a deployment with:
 
@@ -161,10 +164,9 @@ gh workflow run pages.yml
 ```powershell
 uv run --locked ruff check src tests
 uv run --locked pytest
-uv export --locked --no-hashes --no-emit-project --output-file requirements.txt
+uv export --locked --no-hashes --no-emit-project --extra embeddings --output-file requirements.txt
 ```
 
 Commit `pyproject.toml`, `uv.lock`, and the regenerated `requirements.txt` together
 when dependencies change. The export includes development tools and excludes the
 local package; uv remains the installation path that also installs that package.
-Add `--extra embeddings` to the export command if that extra is required.

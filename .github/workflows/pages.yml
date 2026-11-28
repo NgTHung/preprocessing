@@ -17,7 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     env:
       BASE_URL: /${{ github.event.repository.name }}
     steps:
@@ -34,7 +34,7 @@ jobs:
           python-version: "3.12"
           enable-cache: true
       - name: Install locked dependencies
-        run: uv sync --locked
+        run: uv sync --locked --extra embeddings
       - name: Lint shared Python code
         run: uv run --locked ruff check src tests
       - name: Test shared Python code
