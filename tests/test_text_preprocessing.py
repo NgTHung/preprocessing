@@ -72,6 +72,13 @@ def test_remove_wire_tags_removes_only_the_three_agencies():
     assert collapse_whitespace(remove_wire_tags(text)) == "LONDON - x y z (CP)"
 
 
+def test_remove_wire_tags_removes_agency_datelines():
+    text = "Title (Reuters) Reuters - Stocks rose. AP - Late news; AFP - more; Reuters-owned"
+    assert collapse_whitespace(remove_wire_tags(text)) == (
+        "Title Stocks rose. Late news; more; Reuters-owned"
+    )
+
+
 def test_normalize_runs_steps_in_order():
     raw = "Ford #39;s &lt;A HREF=\"http://x\"&gt;F.N&lt;/A&gt; (Reuters) Reuters - Sales\\rose 5%"
     assert normalize(raw) == "ford's f n reuters reuters sales rose"

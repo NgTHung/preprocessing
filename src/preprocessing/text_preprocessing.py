@@ -30,7 +30,8 @@ _SYMBOL = re.compile(r"[^\w'’-]|_")
 # Apostrophes and hyphens survive only between two letters or digits.
 _LOOSE_MARK = re.compile(r"(?<![^\W_])['’-]|['’-](?![^\W_])")
 _NUMBER_TOKEN = re.compile(r"(?<!\S)[\d'’-]+(?!\S)")
-_WIRE_TAG = re.compile(r"\((?:Reuters|AP|AFP)\)")
+# "(Reuters)" tags and "Reuters - " datelines; "Reuters-owned" is left alone.
+_WIRE_TAG = re.compile(r"\((?:Reuters|AP|AFP)\)|(?<![\w-])(?:Reuters|AP|AFP)\s+-(?=\s)")
 
 
 def repair_entities(text: str) -> str:
@@ -99,10 +100,12 @@ def collapse_whitespace(text: str) -> str:
 
 
 def remove_wire_tags(text: str) -> str:
-    """Delete the case-sensitive source tags ``(Reuters)``, ``(AP)``, and ``(AFP)``.
+    """Delete the agency markers of Reuters, AP, and AFP (case-sensitive).
 
-    This is an optional step evaluated separately: the tags are content, but
-    their frequency depends on topic. Other datelines are kept.
+    Both forms are removed: the tag ``(Reuters)`` and the dateline ``Reuters -``
+    that often follows it. This is an optional step evaluated separately: the
+    markers are content, but their frequency depends on topic. Other agencies,
+    place datelines, and agency names inside links or words are kept.
     """
     return _WIRE_TAG.sub(" ", text)
 
@@ -126,9 +129,6 @@ def normalize(
     for _, step in steps:
         text = step(text)
     return text
-
-
-# Measurement helpers -------------------------------------------------------
 
 
 def stratified_sample(
